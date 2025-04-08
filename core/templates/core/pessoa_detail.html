@@ -1,0 +1,10 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<h2>Detalhes da Pessoa</h2>
+<p><strong>Nome:</strong> {{ pessoa.nome }}</p>
+<p><strong>E-mail:</strong> {{ pessoa.email }}</p>
+<p><strong>Telefone:</strong> {{ pessoa.telefone }}</p>
+<p><strong>CPF:</strong> {{ pessoa.cpf }}</p>
+<a class="btn btn-secondary" href="{% url 'pessoa_list' %}">Voltar</a>
+{% endblock %}

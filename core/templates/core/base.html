@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema de Gestão</title>
+    <!-- Você pode incluir seu CSS aqui, por exemplo, Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="{% url 'verificar' %}">Home</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item"><a class="nav-link" href="{% url 'pessoa_list' %}">Pessoas</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'grupo_list' %}">Grupos</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'plano_list' %}">Planos</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'servico_list' %}">Serviços</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'planoservico_list' %}">Plano x Serviço</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% block content %}
+        {% endblock %}
+    </div>
+    
+</body>
+</html>

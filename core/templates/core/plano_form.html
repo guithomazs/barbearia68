@@ -1,0 +1,11 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<h2>{% if object %}Editar Plano{% else %}Criar Novo Plano{% endif %}</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Salvar</button>
+    <a class="btn btn-secondary" href="{% url 'plano_list' %}">Cancelar</a>
+</form>
+{% endblock %}

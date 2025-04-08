@@ -1,0 +1,35 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+  <h2>Verificar Serviços com Desconto</h2>
+
+  <form method="post">
+    {% csrf_token %}
+    <input type="text" name="busca" placeholder="Digite o CPF ou nome da pessoa" required>
+    <button type="submit">Verificar</button>
+  </form>
+
+  {% if erro %}
+    <p style="color: red;">{{ erro }}</p>
+  {% endif %}
+
+  {% if resultado %}
+    <h3>Serviços disponíveis:</h3>
+    <table border="1" cellpadding="5" cellspacing="0">
+      <tr>
+        <th>Serviço</th>
+        <th>Valor Original</th>
+        <th>Desconto Aplicado</th>
+        <th>Valor com Desconto</th>
+      </tr>
+      {% for item in resultado %}
+        <tr>
+          <td>{{ item.servico.nome }}</td>
+          <td>R$ {{ item.servico.valor }}</td>
+          <td>{{ item.desconto }}%</td>
+          <td><strong>R$ {{ item.valor_com_desconto|floatformat:2 }}</strong></td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+{% endblock %}

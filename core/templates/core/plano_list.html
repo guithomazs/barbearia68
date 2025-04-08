@@ -1,0 +1,31 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<h2>Lista de Planos</h2>
+<a class="btn btn-primary mb-3" href="{% url 'plano_create' %}">Criar novo plano</a>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>Descrição</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for plano in planos %}
+    <tr>
+      <td><a href="{% url 'plano_detail' plano.pk %}">{{ plano.nome }}</a></td>
+      <td>{{ plano.descricao|default:"-" }}</td>
+      <td>
+        <a class="btn btn-sm btn-warning" href="{% url 'plano_update' plano.pk %}">Editar</a>
+        <a class="btn btn-sm btn-danger" href="{% url 'plano_delete' plano.pk %}">Excluir</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="3">Nenhum plano cadastrado.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<h2>Lista de Plano x Serviço</h2>
+<a class="btn btn-primary mb-3" href="{% url 'planoservico_create' %}">Criar nova associação</a>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Plano</th>
+      <th>Serviço</th>
+      <th>Desconto (%)</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for ps in planoservicos %}
+    <tr>
+      <td><a href="{% url 'planoservico_detail' ps.pk %}">{{ ps.plano.nome }}</a></td>
+      <td>{{ ps.servico.nome }}</td>
+      <td>{{ ps.desconto }}</td>
+      <td>
+        <a class="btn btn-sm btn-warning" href="{% url 'planoservico_update' ps.pk %}">Editar</a>
+        <a class="btn btn-sm btn-danger" href="{% url 'planoservico_delete' ps.pk %}">Excluir</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="4">Nenhuma associação cadastrada.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

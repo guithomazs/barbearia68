@@ -1,0 +1,8 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<h2>Detalhes do Serviço: {{ servico.nome }}</h2>
+<p><strong>Descrição:</strong> {{ servico.descricao|default:"-" }}</p>
+<p><strong>Valor:</strong> {{ servico.valor }}</p>
+<a class="btn btn-secondary" href="{% url 'servico_list' %}">Voltar</a>
+{% endblock %}

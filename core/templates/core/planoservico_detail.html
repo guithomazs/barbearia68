@@ -1,0 +1,9 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<h2>Detalhes da Associação</h2>
+<p><strong>Plano:</strong> {{ planoservico.plano.nome }}</p>
+<p><strong>Serviço:</strong> {{ planoservico.servico.nome }}</p>
+<p><strong>Desconto:</strong> {{ planoservico.desconto }}%</p>
+<a class="btn btn-secondary" href="{% url 'planoservico_list' %}">Voltar</a>
+{% endblock %}

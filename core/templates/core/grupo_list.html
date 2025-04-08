@@ -1,0 +1,45 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<h2>Lista de Grupos</h2>
+<a class="btn btn-primary mb-3" href="{% url 'grupo_create' %}">Criar novo grupo</a>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Nome do Grupo</th>
+      <th>Pessoas</th>
+      <th>Planos</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for grupo in grupos %}
+    <tr>
+      <td><a href="{% url 'grupo_detail' grupo.pk %}">{{ grupo.nome }}</a></td>
+      <td>
+        {% for pessoa in grupo.pessoas.all %}
+          {{ pessoa.nome }}{% if not forloop.last %}, {% endif %}
+        {% empty %}
+          Nenhuma
+        {% endfor %}
+      </td>
+      <td>
+        {% for plano in grupo.planos.all %}
+          {{ plano.nome }}{% if not forloop.last %}, {% endif %}
+        {% empty %}
+          Nenhum
+        {% endfor %}
+      </td>
+      <td>
+        <a class="btn btn-sm btn-warning" href="{% url 'grupo_update' grupo.pk %}">Editar</a>
+        <a class="btn btn-sm btn-danger" href="{% url 'grupo_delete' grupo.pk %}">Excluir</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="4">Nenhum grupo cadastrado.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

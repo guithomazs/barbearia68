@@ -1,0 +1,15 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<h2>Detalhes do Plano: {{ plano.nome }}</h2>
+<p><strong>Descrição:</strong> {{ plano.descricao|default:"-" }}</p>
+<h3>Serviços e Descontos</h3>
+<ul>
+  {% for ps in plano.plano_servicos.all %}
+    <li>{{ ps.servico.nome }} – Desconto: {{ ps.desconto }}%</li>
+  {% empty %}
+    <li>Nenhum serviço associado.</li>
+  {% endfor %}
+</ul>
+<a class="btn btn-secondary" href="{% url 'plano_list' %}">Voltar</a>
+{% endblock %}

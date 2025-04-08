@@ -1,0 +1,20 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<h2>Detalhes do Grupo: {{ grupo.nome }}</h2>
+<p><strong>Pessoas no grupo:</strong> 
+  {% for pessoa in grupo.pessoas.all %}
+      {{ pessoa.nome }}{% if not forloop.last %}, {% endif %}
+  {% empty %}
+      Nenhuma pessoa cadastrada.
+  {% endfor %}
+</p>
+<p><strong>Planos associados:</strong> 
+  {% for plano in grupo.planos.all %}
+      {{ plano.nome }}{% if not forloop.last %}, {% endif %}
+  {% empty %}
+      Nenhum plano cadastrado.
+  {% endfor %}
+</p>
+<a class="btn btn-secondary" href="{% url 'grupo_list' %}">Voltar</a>
+{% endblock %}
