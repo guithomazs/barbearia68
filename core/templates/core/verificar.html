@@ -5,12 +5,55 @@
 
   <form method="post">
     {% csrf_token %}
-    <input type="text" name="busca" placeholder="Digite o CPF ou nome da pessoa" required>
+    <input type="text" name="busca" placeholder="Digite o CPF ou nome da pessoa" value="{{ busca }}" required />
     <button type="submit">Verificar</button>
   </form>
 
   {% if erro %}
     <p style="color: red;">{{ erro }}</p>
+    <form action="{% url 'pessoa_create' %}" method="get">
+      <input type="hidden" name="nome" value="{{ busca }}" />
+      <button type="submit">Cadastrar nova pessoa?</button>
+    </form>
+  {% endif %}
+
+  {% if pessoa %}
+    <h3>Pessoa Encontrada:</h3>
+    <p>
+      <strong>Nome:</strong>
+      <a href="{% url 'pessoa_detail' pessoa.id %}">{{ pessoa.nome }}</a>
+    </p>
+    <p>
+      <strong>Telefone:</strong> {{ pessoa.telefone }}
+    </p>
+    <p>
+      <strong>Email:</strong> {{ pessoa.email }}
+    </p>
+    <p>
+      <strong>CPF:</strong> {{ pessoa.cpf }}
+    </p>
+
+    {% if grupos %}
+      <h4>Grupos:</h4>
+      <ul>
+        {% for grupo in grupos %}
+          <li>
+            <a href="{% url 'grupo_detail' grupo.id %}">{{ grupo.nome }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% if planos_utilizados %}
+      <h4>Planos utilizados para os descontos:</h4>
+      <ul>
+        {% for plano in planos_utilizados %}
+          <li>
+            <a href="{% url 'plano_detail' plano.id %}">{{ plano.nome }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
   {% endif %}
 
   {% if resultado %}
@@ -21,13 +64,23 @@
         <th>Valor Original</th>
         <th>Desconto Aplicado</th>
         <th>Valor com Desconto</th>
+        <th>Plano Usado</th>
       </tr>
       {% for item in resultado %}
         <tr>
           <td>{{ item.servico.nome }}</td>
           <td>R$ {{ item.servico.valor }}</td>
           <td>{{ item.desconto }}%</td>
-          <td><strong>R$ {{ item.valor_com_desconto|floatformat:2 }}</strong></td>
+          <td>
+            <strong>R$ {{ item.valor_com_desconto|floatformat:2 }}</strong>
+          </td>
+          <td>
+            {% if item.plano_usado %}
+              <a href="{% url 'plano_detail' item.plano_usado.id %}">{{ item.plano_usado.nome }}</a>
+            {% else %}
+              Nenhum
+            {% endif %}
+          </td>
         </tr>
       {% endfor %}
     </table>

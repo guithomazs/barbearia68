@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Pessoa, Grupo, Plano, Servico, PlanoServico
+from .models import Pessoa, Grupo, Plano, ServicoProduto, PlanoServico
 
 # Cadastro de Pessoa com exibição simples
 @admin.register(Pessoa)
@@ -24,7 +24,7 @@ class PlanoAdmin(admin.ModelAdmin):
     inlines = [PlanoServicoInline]
 
 # Cadastro de Serviço com exibição simples
-@admin.register(Servico)
+@admin.register(ServicoProduto)
 class ServicoAdmin(admin.ModelAdmin):
     list_display = ('nome', 'valor')
 

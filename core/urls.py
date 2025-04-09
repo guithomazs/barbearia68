@@ -4,7 +4,8 @@ from .views import (
     GrupoListView, GrupoDetailView, GrupoCreateView, GrupoUpdateView, GrupoDeleteView,
     PlanoListView, PlanoDetailView, PlanoCreateView, PlanoUpdateView, PlanoDeleteView,
     ServicoListView, ServicoDetailView, ServicoCreateView, ServicoUpdateView, ServicoDeleteView,
-    PlanoServicoListView, PlanoServicoDetailView, PlanoServicoCreateView, PlanoServicoUpdateView, PlanoServicoDeleteView, home, verificar_servicos
+    PlanoServicoListView, PlanoServicoDetailView, PlanoServicoCreateView, PlanoServicoUpdateView, 
+    PlanoServicoDeleteView, home, verificar_servicos, fluxo_caixa, listar_origem
 )
 
 urlpatterns = [
@@ -47,5 +48,6 @@ urlpatterns = [
     path('planoservicos/<int:pk>/excluir/', PlanoServicoDeleteView.as_view(), name='planoservico_delete'),
     
     path('verificar/', verificar_servicos, name='verificar'),
-
+    path('fluxo-caixa/', fluxo_caixa, name='fluxo_caixa'),
+    path('ajax/listar-origem/', listar_origem, name='listar_origem'),
 ]

@@ -1,0 +1,70 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+  <h2>Fluxo de Caixa</h2>
+  <p><strong>Saldo atual:</strong> R$ {{ saldo|floatformat:2 }}</p>
+
+  <h3>Registrar nova transação</h3>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Registrar</button>
+  </form>
+
+  <h3>Histórico de Transações</h3>
+  <table border="1" cellpadding="5" cellspacing="0">
+    <tr>
+      <th>Data</th>
+      <th>Tipo</th>
+      <th>Descrição</th>
+      <th>Origem</th>
+      <th>Valor</th>
+    </tr>
+    {% for item in registros %}
+      <tr>
+        <td>{{ item.data|date:"d/m/Y H:i" }}</td>
+        <td>{{ item.get_tipo_display }}</td>
+        <td>{{ item.descricao }}</td>
+        <td>
+          {% if item.origem %}
+            {{ item.origem }}
+          {% else %}
+            --
+          {% endif %}
+        </td>
+        <td>
+          {% if item.tipo == "saida" %}
+            <span style="color: red;">-R$ {{ item.valor|floatformat:2 }}</span>
+          {% else %}
+            <span style="color: green;">R$ {{ item.valor|floatformat:2 }}</span>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endblock %}
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function(){
+    $('#id_origin_content_type').change(function(){
+        var ct_id = $(this).val();
+        $.ajax({
+            url: "{% url 'listar_origem' %}",
+            data: {
+                'ct_id': ct_id
+            },
+            success: function(data){
+                var select = $('#id_origin_object');
+                select.empty();
+                // Adiciona uma opção vazia
+                select.append($('<option></option>').attr('value', '').text('---------'));
+                $.each(data, function(index, obj) {
+                    select.append($('<option></option>').attr('value', obj.id).text(obj.nome));
+                });
+            }
+        });
+    });
+});
+</script>

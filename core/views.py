@@ -1,8 +1,13 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-from .models import Pessoa, Grupo, Plano, Servico, PlanoServico
+from .models import Pessoa, Grupo, Plano, ServicoProduto, PlanoServico, Caixa
+from .forms import CaixaForm
+
+from django.db.models import Sum, Case, When, F, DecimalField
+from django.http import JsonResponse
+from django.contrib.contenttypes.models import ContentType
 
 from decimal import Decimal
 
@@ -99,29 +104,29 @@ class PlanoDeleteView(DeleteView):
 
 # ----- Views para Serviço -----
 class ServicoListView(ListView):
-    model = Servico
+    model = ServicoProduto
     template_name = 'core/servico_list.html'
     context_object_name = 'servicos'
 
 class ServicoDetailView(DetailView):
-    model = Servico
+    model = ServicoProduto
     template_name = 'core/servico_detail.html'
     context_object_name = 'servico'
 
 class ServicoCreateView(CreateView):
-    model = Servico
+    model = ServicoProduto
     template_name = 'core/servico_form.html'
     fields = ['nome', 'descricao', 'valor']
     success_url = reverse_lazy('servico_list')
 
 class ServicoUpdateView(UpdateView):
-    model = Servico
+    model = ServicoProduto
     template_name = 'core/servico_form.html'
     fields = ['nome', 'descricao', 'valor']
     success_url = reverse_lazy('servico_list')
 
 class ServicoDeleteView(DeleteView):
-    model = Servico
+    model = ServicoProduto
     template_name = 'core/servico_confirm_delete.html'
     success_url = reverse_lazy('servico_list')
 
@@ -158,10 +163,16 @@ class PlanoServicoDeleteView(DeleteView):
 def verificar_servicos(request):
     resultado = None
     erro = None
+    pessoa = None
+    grupos = []
+    planos_utilizados = set()
 
     if request.method == 'POST':
         busca = request.POST.get('busca')
         pessoa = Pessoa.objects.filter(cpf=busca).first() or Pessoa.objects.filter(nome__icontains=busca).first()
+
+        todos_servicos = ServicoProduto.objects.all()
+        servico_descontos = {}
 
         if not pessoa:
             erro = "Pessoa não encontrada."
@@ -171,27 +182,87 @@ def verificar_servicos(request):
             for grupo in grupos:
                 planos.update(grupo.planos.all())
 
-            # Pega todos os serviços do sistema
-            todos_servicos = Servico.objects.all()
-            servico_descontos = {}
-
             for servico in todos_servicos:
                 maior_desconto = Decimal('0')
+                plano_usado = None
                 for plano in planos:
                     ps = plano.plano_servicos.filter(servico=servico).first()
                     if ps and ps.desconto > maior_desconto:
                         maior_desconto = ps.desconto
-
+                        plano_usado = plano
                 valor_com_desconto = servico.valor * (Decimal('1') - maior_desconto / Decimal('100'))
                 servico_descontos[servico.id] = {
                     'servico': servico,
                     'desconto': maior_desconto,
-                    'valor_com_desconto': valor_com_desconto
+                    'valor_com_desconto': valor_com_desconto,
+                    'plano_usado': plano_usado
                 }
 
-            resultado = list(servico_descontos.values())
+                if plano_usado:
+                    planos_utilizados.add(plano_usado)
+
+        # Caso a pessoa não seja encontrada, mostrar os serviços com 0% de desconto
+        if not pessoa:
+            for servico in todos_servicos:
+                servico_descontos[servico.id] = {
+                    'servico': servico,
+                    'desconto': Decimal('0'),
+                    'valor_com_desconto': servico.valor,
+                    'plano_usado': None
+                }
+
+        resultado = list(servico_descontos.values())
 
     return render(request, 'core/verificar.html', {
         'resultado': resultado,
-        'erro': erro
+        'erro': erro,
+        'pessoa': pessoa,
+        'grupos': grupos,
+        'planos_utilizados': planos_utilizados,
+        'busca': request.POST.get('busca', '')
     })
+    
+def fluxo_caixa(request):
+    if request.method == "POST":
+        form = CaixaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('fluxo_caixa')
+    else:
+        form = CaixaForm()
+
+    registros = Caixa.objects.all().order_by('-data')
+
+    saldo = Caixa.objects.aggregate(
+        total=Sum(
+            Case(
+                When(tipo='entrada', then=F('valor')),
+                When(tipo='saida', then=-F('valor')),
+                output_field=DecimalField()
+            )
+        )
+    )['total'] or Decimal('0.00')
+
+    context = {
+        'registros': registros,
+        'saldo': saldo,
+        'form': form,
+    }
+    return render(request, 'core/fluxo_caixa.html', context)
+
+def listar_origem(request):
+    ct_id = request.GET.get('ct_id')
+    try:
+        ct_id = int(ct_id)
+        content_type = ContentType.objects.get_for_id(ct_id)
+        model_label = content_type.model
+        if model_label == 'pessoa':
+            objetos = Pessoa.objects.all().values('id', 'nome')
+        elif model_label == 'grupo':
+            objetos = Grupo.objects.all().values('id', 'nome')
+        else:
+            objetos = []
+        return JsonResponse(list(objetos), safe=False)
+    except (ValueError, ContentType.DoesNotExist):
+        return JsonResponse([], safe=False)
+    

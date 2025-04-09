@@ -1,4 +1,8 @@
 from django.db import models
+from django.utils import timezone
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
+from decimal import Decimal
 
 class Pessoa(models.Model):
     nome = models.CharField(max_length=100)
@@ -28,17 +32,22 @@ class Plano(models.Model):
     def __str__(self):
         return self.nome
 
-class Servico(models.Model):
+class ServicoProduto(models.Model):
     nome = models.CharField(max_length=100)
     descricao = models.TextField(blank=True, null=True)
     valor = models.DecimalField(max_digits=10, decimal_places=2)
+    eh_produto = models.BooleanField(default=False, verbose_name="É Produto?")
+
+    class Meta:
+        verbose_name = "Serviço ou Produto"
+        verbose_name_plural = "Serviços e Produtos"
 
     def __str__(self):
-        return self.nome
-
+        tipo = "Produto" if self.eh_produto else "Serviço"
+        return f"{self.nome} ({tipo})"
 class PlanoServico(models.Model):
     plano = models.ForeignKey(Plano, related_name='plano_servicos', on_delete=models.CASCADE)
-    servico = models.ForeignKey(Servico, related_name='plano_servicos', on_delete=models.CASCADE)
+    servico = models.ForeignKey(ServicoProduto, related_name='plano_servicos', on_delete=models.CASCADE)
     # Desconto representado em porcentagem para este serviço dentro do plano.
     desconto = models.DecimalField(
         max_digits=5, 
@@ -51,3 +60,35 @@ class PlanoServico(models.Model):
 
     def __str__(self):
         return f"{self.plano.nome} - {self.servico.nome}: {self.desconto}%"
+    
+class Caixa(models.Model):
+    TIPO_CHOICES = (
+        ('entrada', 'Entrada'),
+        ('saida', 'Saída'),
+    )
+
+    descricao = models.CharField(max_length=200)
+    
+    # Relacionamento genérico para a origem (apenas Pessoa e Grupo serão permitidos)
+    origin_content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Tipo de Origem"
+    )
+    origin_object_id = models.PositiveIntegerField(null=True, blank=True)
+    origem = GenericForeignKey('origin_content_type', 'origin_object_id')
+    
+    valor = models.DecimalField(max_digits=10, decimal_places=2)
+    tipo = models.CharField(max_length=7, choices=TIPO_CHOICES)
+    data = models.DateTimeField(default=timezone.now)
+
+    @property
+    def valor_formatado(self):
+        sinal = "-" if self.tipo == "saida" else ""
+        return f"{sinal}R$ {abs(self.valor):.2f}"
+
+    def __str__(self):
+        origem_str = str(self.origem) if self.origem else "Sem origem"
+        return f"{self.get_tipo_display()} - {self.descricao} ({self.valor_formatado}) - Origem: {origem_str}"
